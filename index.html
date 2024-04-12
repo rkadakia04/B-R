@@ -1,28 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Noisy Perlin Noise Texture</title>
+    <title>SVG Drawing</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        canvas {
-            display: block;
+        /* Optional CSS styles */
+        svg {
+            cursor: crosshair;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1; /* Send the SVG canvas behind other elements */
         }
     </style>
 </head>
+
 <body>
+    <!-- SVG Drawing Area -->
+    <svg id="drawing" width="100vw" height="100vh"></svg>
+    <script>
+        // JavaScript for drawing on SVG
+
+        const svg = document.getElementById('drawing');
+
+        let isDrawing = false;
+        let lastX, lastY;
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const { clientX, clientY } = e.touches ? e.touches[0] : e;
+            [lastX, lastY] = [clientX, clientY];
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const { clientX, clientY } = e.touches ? e.touches[0] : e;
+
+            // Calculate distance between last point and current point
+            const dx = clientX - lastX;
+            const dy = clientY - lastY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Determine the number of circles to draw based on the distance
+            const steps = Math.ceil(distance / 2); // Adjust brush size here for larger brush
+            const stepX = dx / steps;
+            const stepY = dy / steps;
+
+            // Draw circles between last point and current point with reduced space
+            for (let i = 0; i < steps; i++) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', lastX + stepX * i);
+                circle.setAttribute('cy', lastY + stepY * i);
+                circle.setAttribute('r', 10); // Set brush size here
+                circle.setAttribute('fill', 'black');
+
+                svg.appendChild(circle);
+            }
+
+            // Update last point
+            [lastX, lastY] = [clientX, clientY];
+        }
+
+        function endDrawing() {
+            isDrawing = false;
+        }
+
+        // Event listeners for drawing
+        svg.addEventListener('mousedown', startDrawing);
+        svg.addEventListener('touchstart', startDrawing);
+
+        svg.addEventListener('mousemove', draw);
+        svg.addEventListener('touchmove', draw);
+
+        svg.addEventListener('mouseup', endDrawing);
+        svg.addEventListener('touchend', endDrawing);
+    </script>
+
+    <!-- Animated Noisy Perlin Noise Texture -->
     <canvas id="noiseCanvas"></canvas>
     <script>
         const canvas = document.getElementById('noiseCanvas');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
 
         // Set canvas size to match the window size
         canvas.width = window.innerWidth;
@@ -108,40 +170,6 @@
             return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
         }
 
-        // Function to handle mouse down event
-        function handleMouseDown(e) {
-            isDrawing = true;
-            draw(e);
-        }
-
-        // Function to handle mouse move event
-        function handleMouseMove(e) {
-            if (isDrawing) {
-                draw(e);
-            }
-        }
-
-        // Function to handle mouse up event
-        function handleMouseUp() {
-            isDrawing = false;
-        }
-
-        // Function to draw on canvas
-        function draw(e) {
-            if (!isDrawing) {
-                return;
-            }
-            const mouseX = e.clientX - canvas.offsetLeft;
-            const mouseY = e.clientY - canvas.offsetTop;
-            ctx.fillStyle = 'black';
-            ctx.fillRect(mouseX, mouseY, 5, 5); // Adjust size as needed
-        }
-
-        // Event listeners for mouse events
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('mouseup', handleMouseUp);
-
         // Function to animate the noise texture
         function animateNoiseTexture() {
             // Clear the canvas before drawing the next frame
@@ -158,4 +186,5 @@
         animateNoiseTexture();
     </script>
 </body>
+
 </html>
