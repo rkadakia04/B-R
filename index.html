@@ -1,7 +1,5 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,29 +9,14 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            height: 100vh; /* Set body and HTML to full viewport height */
-            width: 100vw; /* Set body and HTML to full viewport width */
-            position: relative; /* Ensure the body and HTML elements are positioned relative */
+            height: 100%;
         }
 
         canvas {
             display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Send the canvas behind other elements */
-        }
-
-        svg {
-            cursor: crosshair;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1; /* Bring the SVG drawing area above the canvas */
         }
     </style>
 </head>
-
 <body>
     <canvas id="noiseCanvas"></canvas>
     <script>
@@ -138,70 +121,23 @@
 
         // Call the animation function to start the animation
         animateNoiseTexture();
-    </script>
-    <!-- SVG Drawing Area -->
-    <svg id="drawing" width="100vw" height="100vh"></svg>
-    <script>
-        // JavaScript for drawing on SVG
 
-        const svg = document.getElementById('drawing');
+        // Function to darken the area at the clicked coordinates
+        function darkenArea(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-        let isDrawing = false;
-        let lastX, lastY;
+            // Darken the area at the clicked coordinates
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Darken with 50% opacity
+            ctx.fillRect(x - 25, y - 25, 50, 50); // Darken a 50x50 square around the clicked coordinates
 
-        function startDrawing(e) {
-            isDrawing = true;
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-            [lastX, lastY] = [clientX, clientY];
-            draw(e);
+            // Redraw the noise texture
+            generateNoiseTexture();
         }
 
-        function draw(e) {
-            if (!isDrawing) return;
-
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-
-            // Calculate distance between last point and current point
-            const dx = clientX - lastX;
-            const dy = clientY - lastY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Determine the number of circles to draw based on the distance
-            const steps = Math.ceil(distance / 2); // Adjust brush size here for larger brush
-            const stepX = dx / steps;
-            const stepY = dy / steps;
-
-            // Draw circles between last point and current point with reduced space
-            for (let i = 0; i < steps; i++) {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', lastX + stepX * i);
-                circle.setAttribute('cy', lastY + stepY * i);
-                circle.setAttribute('r', 20); // Set brush size here (larger size)
-                circle.setAttribute('fill', 'black');
-
-                svg.appendChild(circle);
-            }
-
-            // Update last point
-            [lastX, lastY] = [clientX, clientY];
-        }
-
-        function endDrawing() {
-            isDrawing = false;
-        }
-
-        // Event listeners for drawing
-        svg.addEventListener('mousedown', startDrawing);
-        svg.addEventListener('touchstart', startDrawing);
-
-        svg.addEventListener('mousemove', draw);
-        svg.addEventListener('touchmove', draw);
-
-        svg.addEventListener('mouseup', endDrawing);
-        svg.addEventListener('touchend', endDrawing);
+        // Event listener for mouse clicks
+        canvas.addEventListener('click', darkenArea);
     </script>
 </body>
-
 </html>
-
-
