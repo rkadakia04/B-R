@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noisy Perlin Noise Drawing</title>
+    <title>Animated Noisy Perlin Noise Texture</title>
     <style>
         body, html {
             margin: 0;
@@ -14,7 +14,6 @@
 
         canvas {
             display: block;
-            cursor: crosshair;
         }
     </style>
 </head>
@@ -23,6 +22,7 @@
     <script>
         const canvas = document.getElementById('noiseCanvas');
         const ctx = canvas.getContext('2d');
+        let isDrawing = false;
 
         // Set canvas size to match the window size
         canvas.width = window.innerWidth;
@@ -52,7 +52,7 @@
             // Loop through each pixel and set its color based on Perlin noise
             for (let y = 0; y < canvas.height; y++) {
                 for (let x = 0; x < canvas.width; x++) {
-                    // Calculate Perlin noise value
+                    // Calculate Perlin noise value with animation
                     const noiseValue = perlinNoise(x / 120, y / 120, Date.now() / 500);
 
                     // Map noise value to color intensity (here, we're using an orange color)
@@ -108,6 +108,40 @@
             return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
         }
 
+        // Function to handle mouse down event
+        function handleMouseDown(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        // Function to handle mouse move event
+        function handleMouseMove(e) {
+            if (isDrawing) {
+                draw(e);
+            }
+        }
+
+        // Function to handle mouse up event
+        function handleMouseUp() {
+            isDrawing = false;
+        }
+
+        // Function to draw on canvas
+        function draw(e) {
+            if (!isDrawing) {
+                return;
+            }
+            const mouseX = e.clientX - canvas.offsetLeft;
+            const mouseY = e.clientY - canvas.offsetTop;
+            ctx.fillStyle = 'black';
+            ctx.fillRect(mouseX, mouseY, 5, 5); // Adjust size as needed
+        }
+
+        // Event listeners for mouse events
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('mouseup', handleMouseUp);
+
         // Function to animate the noise texture
         function animateNoiseTexture() {
             // Clear the canvas before drawing the next frame
@@ -122,73 +156,6 @@
 
         // Call the animation function to start the animation
         animateNoiseTexture();
-
-        // Variables to store mouse coordinates
-        let mouseX = 0;
-        let mouseY = 0;
-        let isDrawing = false;
-
-        // Function to handle mouse down event
-        function handleMouseDown(e) {
-            isDrawing = true;
-            updateMouseCoordinates(e);
-            draw(); // Draw immediately when mouse down
-        }
-
-        // Function to handle mouse up event
-        function handleMouseUp() {
-            isDrawing = false;
-        }
-
-        // Function to handle mouse move event
-        function handleMouseMove(e) {
-            if (isDrawing) {
-                updateMouseCoordinates(e);
-                draw();
-            }
-        }
-
-        // Function to update mouse coordinates
-        function updateMouseCoordinates(e) {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        }
-
-        // Function to draw on canvas
-        function draw() {
-            // Create an ImageData object to manipulate pixel data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-
-            // Get the noise texture
-            const noiseImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const noiseData = noiseImageData.data;
-
-            // Loop through each pixel and draw with noise texture as the brush
-            for (let y = 0; y < canvas.height; y++) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const index = (y * canvas.width + x) * 4;
-                    const noiseIndex = (Math.floor(y + mouseY) * canvas.width + Math.floor(x + mouseX)) * 4;
-
-                    // Apply the noise texture as the brush
-                    if (noiseData[noiseIndex + 3] > 0) { // Only draw if the alpha value of the noise texture is non-zero
-                        data[index] = 0;  // Set red channel to black
-                        data[index + 1] = 0;  // Set green channel to black
-                        data[index + 2] = 0;  // Set blue channel to black
-                        data[index + 3] = 255;  // Set alpha channel to fully opaque
-                    }
-                }
-            }
-
-            // Put the modified pixel data back to the canvas
-            ctx.putImageData(imageData, 0, 0);
-        }
-
-        // Add event listeners for mouse events
-        canvas.addEventListener('mousedown', handleMouseDown);
-        canvas.addEventListener('mouseup', handleMouseUp);
-        canvas.addEventListener('mousemove', handleMouseMove);
     </script>
 </body>
 </html>
