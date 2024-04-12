@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Voronoi Texture</title>
+    <title>Animated Fuzzy Perlin Noise Texture</title>
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+        }
+
         canvas {
-            border: 1px solid #000;
             display: block;
-            margin: 0 auto;
         }
     </style>
 </head>
 <body>
-    <canvas id="voronoiCanvas" width="800" height="600"></canvas>
-    <script src="voronoi.js"></script>
+    <canvas id="noiseCanvas"></canvas>
+    <script src="perlin.js"></script>
 </body>
 </html>
