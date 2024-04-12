@@ -29,20 +29,6 @@
             left: 0;
             z-index: 1; /* Bring the SVG drawing area above the canvas */
         }
-
-        .blurry-brush {
-            filter: blur(5px); /* Adjust blur radius as needed */
-            animation: ripple 5s infinite alternate; /* Adjust animation duration */
-        }
-
-        @keyframes ripple {
-            from {
-                transform: scale(1);
-            }
-            to {
-                transform: scale(1.01); /* Adjust scale factor for subtler animation */
-            }
-        }
     </style>
 </head>
 <body>
@@ -196,17 +182,10 @@
             // Draw circles between last point and current point with reduced space
             for (let i = 0; i < steps; i++) {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                const radius = 10 + Math.random() * 10; // Random radius
-                const xOffset = Math.random() * 20 - 10; // Random x offset
-                const yOffset = Math.random() * 20 - 10; // Random y offset
-
-                // Add randomness to x and y coordinates
-                circle.setAttribute('cx', lastX + stepX * i + xOffset);
-                circle.setAttribute('cy', lastY + stepY * i + yOffset);
-                circle.setAttribute('r', radius);
+                circle.setAttribute('cx', lastX + stepX * i + Math.random() * 10 - 5); // Add randomness to x-coordinate
+                circle.setAttribute('cy', lastY + stepY * i + Math.random() * 10 - 5); // Add randomness to y-coordinate
+                circle.setAttribute('r', 20); // Set brush size here (larger size)
                 circle.setAttribute('fill', 'black');
-                circle.classList.add('blurry-brush'); // Apply blur effect
-                circle.setAttribute('opacity', '0.7'); // Reduce opacity for noisy edges
 
                 svg.appendChild(circle);
             }
@@ -231,3 +210,4 @@
     </script>
 </body>
 </html>
+

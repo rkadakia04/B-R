@@ -1,22 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Drawing</title>
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #parallelogram {
-            width: 300px;
-            height: 200px; 
-            transform: skew(20deg);
-            background: gray; 
+        /* Optional CSS styles */
+        svg {
+            cursor: crosshair;
         }
     </style>
 </head>
+
 <body>
-    <div id="parallelogram"></div>
+    <!-- SVG Drawing Area -->
+    <svg id="drawing" width="100vw" height="100vh"></svg>
+
+    <script>
+        // JavaScript for drawing on SVG
+
+        const svg = document.getElementById('drawing');
+
+        let isDrawing = false;
+        let lastX, lastY;
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const { clientX, clientY } = e.touches ? e.touches[0] : e;
+            [lastX, lastY] = [clientX, clientY];
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const { clientX, clientY } = e.touches ? e.touches[0] : e;
+
+            // Calculate distance between last point and current point
+            const dx = clientX - lastX;
+            const dy = clientY - lastY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Determine the number of circles to draw based on the distance
+            const steps = Math.ceil(distance / 5); // Adjust brush size here for larger brush
+            const stepX = dx / steps;
+            const stepY = dy / steps;
+
+            // Draw circles between last point and current point with reduced space
+            for (let i = 0; i < steps; i++) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', lastX + stepX * i);
+                circle.setAttribute('cy', lastY + stepY * i);
+                circle.setAttribute('r', 20); // Set larger brush size here
+                circle.setAttribute('fill', 'black');
+
+                svg.appendChild(circle);
+            }
+
+            // Update last point
+            [lastX, lastY] = [clientX, clientY];
+        }
+
+        function endDrawing() {
+            isDrawing = false;
+        }
+
+        // Event listeners for drawing
+        svg.addEventListener('mousedown', startDrawing);
+        svg.addEventListener('touchstart', startDrawing);
+
+        svg.addEventListener('mousemove', draw);
+        svg.addEventListener('touchmove', draw);
+
+        svg.addEventListener('mouseup', endDrawing);
+        svg.addEventListener('touchend', endDrawing);
+    </script>
 </body>
+
 </html>
