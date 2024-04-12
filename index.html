@@ -1,5 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,6 +33,7 @@
         }
     </style>
 </head>
+
 <body>
     <canvas id="noiseCanvas"></canvas>
     <script>
@@ -51,12 +54,12 @@
             135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
             5,202,38,147,118,126,255,82,85,212,207,206, 59,227,47,16,58,17,182,189,28,42,
             223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172, 9,
-            129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-            251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-            49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-            138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+            129,22,39,253,19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+            251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+            49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+            138,236,205,93,222,114,67,29, 24,72,243,141,128,195,78,66,215,61,156,180];
 
-        // Function to generate Perlin noise texture with added grain/noise
+        // Function to generate Perlin noise texture
         function generateNoiseTexture() {
             // Create an ImageData object to manipulate pixel data
             const imageData = ctx.createImageData(canvas.width, canvas.height);
@@ -68,15 +71,10 @@
                     // Calculate Perlin noise value with animation
                     const noiseValue = perlinNoise(x / 120, y / 120, Date.now() / 500);
 
-                    // Add random noise to the color values
-                    const noise = (Math.random() * 20) - 10;
-
                     // Map noise value to color intensity (here, we're using an orange color)
-                    const colorValue = Math.floor(200 + 100 * noiseValue) + noise;
-                    const greenValue = Math.floor(100 + 50 * noiseValue) + noise;
-
+                    const colorValue = Math.floor(200 + 100 * noiseValue);
                     data[(y * canvas.width + x) * 4] = colorValue;      // Red channel
-                    data[(y * canvas.width + x) * 4 + 1] = greenValue;  // Green channel
+                    data[(y * canvas.width + x) * 4 + 1] = Math.floor(100 + 50 * noiseValue);  // Green channel
                     data[(y * canvas.width + x) * 4 + 2] = 50;          // Blue channel (constant for a darker orange)
                     data[(y * canvas.width + x) * 4 + 3] = 255;         // Alpha channel (fully opaque)
                 }
@@ -111,20 +109,14 @@
                                         grad(permutation[BA], x - 1, y, t)),
                                 lerp(u, grad(permutation[AB], x, y - 1, t),
                                         grad(permutation[BB], x - 1, y - 1, t))),
-                            lerp(v, lerp(u, grad(permutation[AA + 1], x, y, t - 1),
+                        lerp(v, lerp(u, grad(permutation[AA + 1], x, y, t - 1),
                                         grad(permutation[BA + 1], x - 1, y, t - 1)),
                                 lerp(u, grad(permutation[AB + 1], x, y - 1, t - 1),
                                         grad(permutation[BB + 1], x - 1, y - 1, t - 1))));
         }
 
-        function fade(t) {
-            return t * t * t * (t * (t * 6 - 15) + 10);
-        }
-
-        function lerp(t, a, b) {
-            return a + t * (b - a);
-        }
-
+        function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+        function lerp(t, a, b) { return a + t * (b - a); }
         function grad(hash, x, y, t) {
             const h = hash & 15;
             const u = h < 8 ? x : y;
@@ -182,8 +174,8 @@
             // Draw circles between last point and current point with reduced space
             for (let i = 0; i < steps; i++) {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', lastX + stepX * i + Math.random() * 10 - 5); // Add randomness to x-coordinate
-                circle.setAttribute('cy', lastY + stepY * i + Math.random() * 10 - 5); // Add randomness to y-coordinate
+                circle.setAttribute('cx', lastX + stepX * i);
+                circle.setAttribute('cy', lastY + stepY * i);
                 circle.setAttribute('r', 20); // Set brush size here (larger size)
                 circle.setAttribute('fill', 'black');
 
@@ -209,5 +201,7 @@
         svg.addEventListener('touchend', endDrawing);
     </script>
 </body>
+
 </html>
+
 
