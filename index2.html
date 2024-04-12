@@ -1,81 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG Drawing</title>
+    <title>Dynamic Darkening Effect</title>
     <style>
-        /* Optional CSS styles */
-        svg {
-            cursor: crosshair;
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #spongebob {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cursor-blob {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px; /* Adjust the size of the cursor blob */
+            height: 300px; /* Adjust the size of the cursor blob */
+            border-radius: 50%; /* Make it circular */
+            pointer-events: none; /* Ensure it doesn't interfere with mouse events */
+            background-color: rgba(0, 0, 0, 0.9); /* Initial transparent color */
+            mix-blend-mode: multiply; /* Blend mode to multiply */
+            transform: translate(-50%, -50%); /* Center the blob on the cursor */
+            display: none; /* Initially hide the blob */
+            filter: blur(20px); /* Blur the edges of the circle */
+            opacity: 0; /* Initially set opacity to 0 for fade-in effect */
+            transition: opacity 2s; /* Transition for opacity change over 2 seconds */
         }
     </style>
 </head>
-
 <body>
-    <!-- SVG Drawing Area -->
-    <svg id="drawing" width="100vw" height="100vh"></svg>
-
+    <div class="container">
+        <img src="spongebob.jpg" alt="SpongeBob" id="spongebob">
+        <div class="cursor-blob"></div> <!-- Cursor blob -->
+    </div>
     <script>
-        // JavaScript for drawing on SVG
+        document.addEventListener("DOMContentLoaded", function() {
+            const container = document.querySelector(".container");
+            const cursorBlob = document.querySelector(".cursor-blob");
+            let isDragging = false;
 
-        const svg = document.getElementById('drawing');
+            container.addEventListener("mousedown", function(e) {
+                isDragging = true;
+                cursorBlob.style.opacity = "0.9"; // Set opacity to 0.9 for fade-in effect
+                cursorBlob.style.display = "block"; // Show the cursor blob
+                updateCursorBlobPosition(e);
+            });
 
-        let isDrawing = false;
-        let lastX, lastY;
+            container.addEventListener("mousemove", function(e) {
+                if (isDragging) {
+                    updateCursorBlobPosition(e);
+                }
+            });
 
-        function startDrawing(e) {
-            isDrawing = true;
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-            [lastX, lastY] = [clientX, clientY];
-            draw(e);
-        }
+            container.addEventListener("mouseup", function(e) {
+                isDragging = false;
+                hideCursorBlob();
+            });
 
-        function draw(e) {
-            if (!isDrawing) return;
+            container.addEventListener("mouseleave", function() {
+                if (isDragging) {
+                    isDragging = false;
+                    hideCursorBlob();
+                }
+            });
 
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
+            function updateCursorBlobPosition(e) {
+                // Get mouse position
+                const mouseX = e.pageX;
+                const mouseY = e.pageY;
 
-            // Calculate distance between last point and current point
-            const dx = clientX - lastX;
-            const dy = clientY - lastY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Determine the number of circles to draw based on the distance
-            const steps = Math.ceil(distance / 5); // Adjust brush size here for larger brush
-            const stepX = dx / steps;
-            const stepY = dy / steps;
-
-            // Draw circles between last point and current point with reduced space
-            for (let i = 0; i < steps; i++) {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', lastX + stepX * i);
-                circle.setAttribute('cy', lastY + stepY * i);
-                circle.setAttribute('r', 20); // Set larger brush size here
-                circle.setAttribute('fill', 'black');
-
-                svg.appendChild(circle);
+                // Update cursor blob position
+                cursorBlob.style.left = mouseX + "px";
+                cursorBlob.style.top = mouseY + "px";
             }
 
-            // Update last point
-            [lastX, lastY] = [clientX, clientY];
-        }
-
-        function endDrawing() {
-            isDrawing = false;
-        }
-
-        // Event listeners for drawing
-        svg.addEventListener('mousedown', startDrawing);
-        svg.addEventListener('touchstart', startDrawing);
-
-        svg.addEventListener('mousemove', draw);
-        svg.addEventListener('touchmove', draw);
-
-        svg.addEventListener('mouseup', endDrawing);
-        svg.addEventListener('touchend', endDrawing);
+            function hideCursorBlob() {
+                // Hide the cursor blob
+                cursorBlob.style.opacity = "0"; // Set opacity to 0 for fade-out effect
+                setTimeout(() => {
+                    cursorBlob.style.display = "none";
+                }, 2000); // Hide the cursor blob after the transition
+            }
+        });
     </script>
 </body>
-
 </html>
