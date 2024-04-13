@@ -9,25 +9,11 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            height: 100vh; /* Set body and HTML to full viewport height */
-            width: 100vw; /* Set body and HTML to full viewport width */
-            position: relative; /* Ensure the body and HTML elements are positioned relative */
+            height: 100%;
         }
 
         canvas {
             display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Send the canvas behind other elements */
-        }
-
-        svg {
-            cursor: crosshair;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1; /* Bring the SVG drawing area above the canvas */
         }
     </style>
 </head>
@@ -51,12 +37,12 @@
             135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
             5,202,38,147,118,126,255,82,85,212,207,206, 59,227,47,16,58,17,182,189,28,42,
             223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172, 9,
-            129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-            251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-            49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-            138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+            129,22,39,253,19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+            251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+            49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+            138,236,205,93,222,114,67,29, 24,72,243,141,128,195,78,66,215,61,156,180];
 
-        // Function to generate Perlin noise texture with added grain/noise
+        // Function to generate Perlin noise texture
         function generateNoiseTexture() {
             // Create an ImageData object to manipulate pixel data
             const imageData = ctx.createImageData(canvas.width, canvas.height);
@@ -68,15 +54,10 @@
                     // Calculate Perlin noise value with animation
                     const noiseValue = perlinNoise(x / 120, y / 120, Date.now() / 500);
 
-                    // Add random noise to the color values
-                    const noise = (Math.random() * 20) - 10;
-
                     // Map noise value to color intensity (here, we're using an orange color)
-                    const colorValue = Math.floor(200 + 100 * noiseValue) + noise;
-                    const greenValue = Math.floor(100 + 50 * noiseValue) + noise;
-
+                    const colorValue = Math.floor(200 + 100 * noiseValue);
                     data[(y * canvas.width + x) * 4] = colorValue;      // Red channel
-                    data[(y * canvas.width + x) * 4 + 1] = greenValue;  // Green channel
+                    data[(y * canvas.width + x) * 4 + 1] = Math.floor(100 + 50 * noiseValue);  // Green channel
                     data[(y * canvas.width + x) * 4 + 2] = 50;          // Blue channel (constant for a darker orange)
                     data[(y * canvas.width + x) * 4 + 3] = 255;         // Alpha channel (fully opaque)
                 }
@@ -111,20 +92,14 @@
                                         grad(permutation[BA], x - 1, y, t)),
                                 lerp(u, grad(permutation[AB], x, y - 1, t),
                                         grad(permutation[BB], x - 1, y - 1, t))),
-                            lerp(v, lerp(u, grad(permutation[AA + 1], x, y, t - 1),
+                        lerp(v, lerp(u, grad(permutation[AA + 1], x, y, t - 1),
                                         grad(permutation[BA + 1], x - 1, y, t - 1)),
                                 lerp(u, grad(permutation[AB + 1], x, y - 1, t - 1),
                                         grad(permutation[BB + 1], x - 1, y - 1, t - 1))));
         }
 
-        function fade(t) {
-            return t * t * t * (t * (t * 6 - 15) + 10);
-        }
-
-        function lerp(t, a, b) {
-            return a + t * (b - a);
-        }
-
+        function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+        function lerp(t, a, b) { return a + t * (b - a); }
         function grad(hash, x, y, t) {
             const h = hash & 15;
             const u = h < 8 ? x : y;
@@ -146,68 +121,35 @@
 
         // Call the animation function to start the animation
         animateNoiseTexture();
-    </script>
-    <!-- SVG Drawing Area -->
-    <svg id="drawing" width="100vw" height="100vh"></svg>
-    <script>
-        // JavaScript for drawing on SVG
 
-        const svg = document.getElementById('drawing');
-
+        // Event listeners for drawing on the canvas
         let isDrawing = false;
-        let lastX, lastY;
+        let lastX = 0;
+        let lastY = 0;
 
-        function startDrawing(e) {
+        canvas.addEventListener('mousedown', (e) => {
             isDrawing = true;
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-            [lastX, lastY] = [clientX, clientY];
-            draw(e);
-        }
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
 
-        function draw(e) {
+        canvas.addEventListener('mousemove', (e) => {
             if (!isDrawing) return;
+            ctx.globalCompositeOperation = 'destination-out'; // Drawing will erase
+            ctx.lineWidth = 20; // Adjust brush size
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.clientX, e.clientY);
+            ctx.stroke();
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
 
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-
-            // Calculate distance between last point and current point
-            const dx = clientX - lastX;
-            const dy = clientY - lastY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Determine the number of circles to draw based on the distance
-            const steps = Math.ceil(distance / 2); // Adjust brush size here for larger brush
-            const stepX = dx / steps;
-            const stepY = dy / steps;
-
-            // Draw circles between last point and current point with reduced space
-            for (let i = 0; i < steps; i++) {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', lastX + stepX * i + Math.random() * 10 - 5); // Add randomness to x-coordinate
-                circle.setAttribute('cy', lastY + stepY * i + Math.random() * 10 - 5); // Add randomness to y-coordinate
-                circle.setAttribute('r', 20); // Set brush size here (larger size)
-                circle.setAttribute('fill', 'black');
-
-                svg.appendChild(circle);
-            }
-
-            // Update last point
-            [lastX, lastY] = [clientX, clientY];
-        }
-
-        function endDrawing() {
+        canvas.addEventListener('mouseup', () => {
             isDrawing = false;
-        }
-
-        // Event listeners for drawing
-        svg.addEventListener('mousedown', startDrawing);
-        svg.addEventListener('touchstart', startDrawing);
-
-        svg.addEventListener('mousemove', draw);
-        svg.addEventListener('touchmove', draw);
-
-        svg.addEventListener('mouseup', endDrawing);
-        svg.addEventListener('touchend', endDrawing);
+        });
     </script>
 </body>
 </html>
-
