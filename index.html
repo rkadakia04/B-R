@@ -15,13 +15,24 @@
         canvas {
             display: block;
         }
+
+        #hiddenImage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Initially hidden */
+        }
     </style>
 </head>
 <body>
     <canvas id="noiseCanvas"></canvas>
+    <img id="hiddenImage" src="IMG_9014.jpg"> <!-- Replace 'your_image.jpg' with your image path -->
     <script>
         const canvas = document.getElementById('noiseCanvas');
         const ctx = canvas.getContext('2d');
+        const hiddenImage = document.getElementById('hiddenImage');
 
         // Set canvas size to match the window size
         canvas.width = window.innerWidth;
@@ -122,33 +133,14 @@
         // Call the animation function to start the animation
         animateNoiseTexture();
 
-        // Event listeners for drawing on the canvas
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
-            ctx.globalCompositeOperation = 'destination-out'; // Drawing will erase
-            ctx.lineWidth = 20; // Adjust brush size
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(e.clientX, e.clientY);
-            ctx.stroke();
-            lastX = e.clientX;
-            lastY = e.clientY;
-        });
-
-        canvas.addEventListener('mouseup', () => {
-            isDrawing = false;
+        // Event listener for scrubbing action
+        window.addEventListener('mousemove', function(event) {
+            // Calculate the opacity based on mouse position
+            const opacity = event.clientX / window.innerWidth;
+            // Update the opacity of the hidden image
+            hiddenImage.style.opacity = opacity.toString();
+            // Show the hidden image
+            hiddenImage.style.display = 'block';
         });
     </script>
 </body>
