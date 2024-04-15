@@ -7,12 +7,20 @@
   <style>
     canvas {
       position: absolute;
-      top: 0px;
-      left: 0px;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 100%;
+      height: 100%; /* Maintain aspect ratio */
+    }
+  
+    @media (max-width: 768px) {
+      canvas {
+        width: 90%;
+        height: 100%; /* Maintain aspect ratio */
+      }
     }
   </style>
+  
 </head>
 <body>
   <canvas id="canvas"></canvas>
@@ -24,7 +32,7 @@
 
     // create and load background image
     const bgImg = new Image;
-    bgImg.src = "https://i.stack.imgur.com/C7qq2.png?s=256&g=1";
+    bgImg.src = "b&b.jpg";
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
     const canvas = document.getElementById("canvas");
     const W = window.innerWidth, H = window.innerHeight;
@@ -32,16 +40,7 @@
     canvas.height = H;
     const ctx = canvas.getContext("2d");
 
-    // Show state and setup help settings
-    ctx.font = "32px arial";
-    ctx.fillText("Loading...", 30, 60);
-    ctx.font = "24px arial";
-    ctx.fillStyle = "#FFF";
-    ctx.strokeStyle = "#000";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = 30; // Set brush size here
-    ctx.shadowBlur = 30; // Set shadow blur here
-    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; // Set shadow color and transparency here
+    
 
     // setup overlay canvas
     const overlay = copyImg(canvas);
@@ -114,10 +113,7 @@ function renderLoop() {
     ctxO.globalCompositeOperation = "source-atop";
     ctxO.drawImage(video, 0, 0, W, H);
     ctx.drawImage(overlay, 0, 0, W, H);
-    if (showHelp) {              
-      ctx.strokeText( "Click drag to reveal", 32, 62);
-      ctx.fillText( "Click drag to reveal", 30, 60);
-    }
+   
   }
   requestAnimationFrame(renderLoop);
 }
@@ -128,5 +124,3 @@ function renderLoop() {
   </script>
 </body>
 </html>
-
-
