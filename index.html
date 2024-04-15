@@ -1,205 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Noisy Perlin Noise Texture</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh; /* Set body and HTML to full viewport height */
-            width: 100vw; /* Set body and HTML to full viewport width */
-            position: relative; /* Ensure the body and HTML elements are positioned relative */
-        }
-
-        canvas {
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Send the canvas behind other elements */
-        }
-
-        svg {
-            cursor: crosshair;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1; /* Bring the SVG drawing area above the canvas */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Video Overlay</title>
+  <style>
+    canvas {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
-
 <body>
-    <canvas id="noiseCanvas"></canvas>
-    <script>
-        const canvas = document.getElementById('noiseCanvas');
-        const ctx = canvas.getContext('2d');
+  <canvas id="canvas"></canvas>
+  <script>
+    const mediaSource = "http://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv";
 
-        // Set canvas size to match the window size
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    var showHelp = true;
+    var bgReady = false;
 
-        // Permutation table
-        const permutation = [151,160,137,91,90,15,
-            131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
-            190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
-            88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
-            77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
-            102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
-            135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
-            5,202,38,147,118,126,255,82,85,212,207,206, 59,227,47,16,58,17,182,189,28,42,
-            223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172, 9,
-            129,22,39,253,19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
-            251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
-            49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
-            138,236,205,93,222,114,67,29, 24,72,243,141,128,195,78,66,215,61,156,180];
+    // create and load background image
+    const bgImg = new Image;
+    bgImg.src = "https://i.stack.imgur.com/C7qq2.png?s=256&g=1";
+    bgImg.addEventListener("load", () => bgReady = true, {once: true});
+    const canvas = document.getElementById("canvas");
+    const W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
 
-        // Function to generate Perlin noise texture
-        function generateNoiseTexture() {
-            // Create an ImageData object to manipulate pixel data
-            const imageData = ctx.createImageData(canvas.width, canvas.height);
-            const data = imageData.data;
+    // Show state and setup help settings
+    ctx.font = "32px arial";
+    ctx.fillText("Loading...", 30, 60);
+    ctx.font = "24px arial";
+    ctx.fillStyle = "#FFF";
+    ctx.strokeStyle = "#000";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 4;  
 
-            // Loop through each pixel and set its color based on Perlin noise
-            for (let y = 0; y < canvas.height; y++) {
-                for (let x = 0; x < canvas.width; x++) {
-                    // Calculate Perlin noise value with animation
-                    const noiseValue = perlinNoise(x / 120, y / 120, Date.now() / 500);
+    // setup overlay canvas
+    const overlay = copyImg(canvas);
+    const ctxO = overlay.getContext("2d");
+    ctxO.fillRect(0, 0, W, H);
+    ctxO.lineJoin = "round";
+    ctxO.lineCap = "round";
+    function copyImg(img) {
+      const can = Object.assign(document.createElement("canvas"), {width: img.width, height: img.height});
+      return can;
+    }
 
-                    // Map noise value to color intensity (here, we're using an orange color)
-                    const colorValue = Math.floor(200 + 100 * noiseValue);
-                    data[(y * canvas.width + x) * 4] = colorValue;      // Red channel
-                    data[(y * canvas.width + x) * 4 + 1] = Math.floor(100 + 50 * noiseValue);  // Green channel
-                    data[(y * canvas.width + x) * 4 + 2] = 50;          // Blue channel (constant for a darker orange)
-                    data[(y * canvas.width + x) * 4 + 3] = 255;         // Alpha channel (fully opaque)
-                }
-            }
+    // create video element and load media. Will call StartVideo when ready   
+    const video = createVideo(mediaSource, StartVideo);
+    function createVideo(mediaSource, animCallback) {
+      const video = document.createElement("video"); 
+      video.src = mediaSource;
+      video.autoPlay = false;
+      video.loop = true;
+      video.muted = true;
+      video.addEventListener("canplay", animCallback, {once: true});
+      video.addEventListener("error", error, {once: true})  
+      function error(e) { console.log("Could not load video!!! ", e); }  
+      return video
+    }
+    function StartVideo() {
+      video.play();
+      renderLoop();
+    }
 
-            // Put the modified pixel data back to the canvas
-            ctx.putImageData(imageData, 0, 0);
+    // Create simple mouse listeners
+    const mouse = createMouse();
+    function createMouse() {
+      const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
+      m.bounds = m.element.getBoundingClientRect();
+      function mouseEvents(e) {
+        m.x = e.pageX - m.bounds.left - scrollX;
+        m.y = e.pageY - m.bounds.top - scrollY;
+        mouse.button = e.type === "mousedown" ? true : e.type === "mouseup" ? false : mouse.button;
+      }
+      ["down", "up", "move"].forEach(name => document.addEventListener("mouse" + name, mouseEvents));
+      return m;
+    }
+
+    // main render loop
+    function renderLoop() {
+      if (bgReady) {
+        ctx.drawImage(bgImg, 0, 0, W, H);
+        if (mouse.button) {
+          ctxO.globalCompositeOperation = "destination-out";
+          ctxO.strokeStyle = "#0008";
+          ctxO.beginPath();
+          ctxO.lineTo(mouse.px, mouse.py);
+          ctxO.lineTo(mouse.x, mouse.y);
+          ctxO.lineWidth = 30;
+          ctxO.stroke();
+          ctxO.lineWidth = 26;
+          ctxO.stroke();
+          ctxO.lineWidth = 22;
+          ctxO.stroke();
+          showHelp = false;   
         }
-
-        // Function to generate Perlin noise
-        function perlinNoise(x, y, t) {
-            const X = Math.floor(x) & 255;
-            const Y = Math.floor(y) & 255;
-            const Z = Math.floor(t) & 255;
-
-            x -= Math.floor(x);
-            y -= Math.floor(y);
-            t -= Math.floor(t);
-
-            const u = fade(x);
-            const v = fade(y);
-            const w = fade(t);
-
-            const A = permutation[X] + Y;
-            const AA = permutation[A] + Z;
-            const AB = permutation[A + 1] + Z;
-            const B = permutation[X + 1] + Y;
-            const BA = permutation[B] + Z;
-            const BB = permutation[B + 1] + Z;
-
-            return lerp(w, lerp(v, lerp(u, grad(permutation[AA], x, y, t),
-                                        grad(permutation[BA], x - 1, y, t)),
-                                lerp(u, grad(permutation[AB], x, y - 1, t),
-                                        grad(permutation[BB], x - 1, y - 1, t))),
-                        lerp(v, lerp(u, grad(permutation[AA + 1], x, y, t - 1),
-                                        grad(permutation[BA + 1], x - 1, y, t - 1)),
-                                lerp(u, grad(permutation[AB + 1], x, y - 1, t - 1),
-                                        grad(permutation[BB + 1], x - 1, y - 1, t - 1))));
+        ctxO.globalCompositeOperation = "source-atop";
+        ctxO.drawImage(video, 0, 0, W, H);
+        ctx.drawImage(overlay, 0, 0, W, H);
+        if (showHelp) {              
+          ctx.strokeText( "Click drag to reveal", 32, 62);
+          ctx.fillText( "Click drag to reveal", 30, 60);
         }
-
-        function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-        function lerp(t, a, b) { return a + t * (b - a); }
-        function grad(hash, x, y, t) {
-            const h = hash & 15;
-            const u = h < 8 ? x : y;
-            const v = h < 4 ? y : h === 12 || h === 14 ? x : t;
-            return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-        }
-
-        // Function to animate the noise texture
-        function animateNoiseTexture() {
-            // Clear the canvas before drawing the next frame
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Generate the noise texture
-            generateNoiseTexture();
-
-            // Request the next animation frame
-            requestAnimationFrame(animateNoiseTexture);
-        }
-
-        // Call the animation function to start the animation
-        animateNoiseTexture();
-    </script>
-    <!-- SVG Drawing Area -->
-    <svg id="drawing" width="100vw" height="100vh"></svg>
-    <script>
-        // JavaScript for drawing on SVG
-
-        const svg = document.getElementById('drawing');
-
-        let isDrawing = false;
-        let lastX, lastY;
-
-        function startDrawing(e) {
-            isDrawing = true;
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-            [lastX, lastY] = [clientX, clientY];
-            draw(e);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-
-            const { clientX, clientY } = e.touches ? e.touches[0] : e;
-
-            // Calculate distance between last point and current point
-            const dx = clientX - lastX;
-            const dy = clientY - lastY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Determine the number of circles to draw based on the distance
-            const steps = Math.ceil(distance / 2); // Adjust brush size here for larger brush
-            const stepX = dx / steps;
-            const stepY = dy / steps;
-
-            // Draw circles between last point and current point with reduced space
-            for (let i = 0; i < steps; i++) {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', lastX + stepX * i);
-                circle.setAttribute('cy', lastY + stepY * i);
-                circle.setAttribute('r', 20); // Set brush size here (larger size)
-                circle.setAttribute('fill', 'black');
-
-                svg.appendChild(circle);
-            }
-
-            // Update last point
-            [lastX, lastY] = [clientX, clientY];
-        }
-
-        function endDrawing() {
-            isDrawing = false;
-        }
-
-        // Event listeners for drawing
-        svg.addEventListener('mousedown', startDrawing);
-        svg.addEventListener('touchstart', startDrawing);
-
-        svg.addEventListener('mousemove', draw);
-        svg.addEventListener('touchmove', draw);
-
-        svg.addEventListener('mouseup', endDrawing);
-        svg.addEventListener('touchend', endDrawing);
-    </script>
+      }
+      mouse.px = mouse.x;
+      mouse.py = mouse.y;
+      requestAnimationFrame(renderLoop);
+    }
+  </script>
 </body>
-
 </html>
-
