@@ -7,8 +7,8 @@
   <style>
     canvas {
       position: absolute;
-      top: 0px;
-      left: 0px;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
     }
@@ -27,9 +27,6 @@
     bgImg.src = "https://i.stack.imgur.com/C7qq2.png?s=256&g=1";
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
     const canvas = document.getElementById("canvas");
-    const W = window.innerWidth, H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
     const ctx = canvas.getContext("2d");
 
     // Show state and setup help settings
@@ -44,7 +41,7 @@
     // setup overlay canvas
     const overlay = copyImg(canvas);
     const ctxO = overlay.getContext("2d");
-    ctxO.fillRect(0, 0, W, H);
+    ctxO.fillRect(0, 0, canvas.width, canvas.height);
     ctxO.lineJoin = "round";
     ctxO.lineCap = "round";
     function copyImg(img) {
@@ -57,7 +54,7 @@
     function createVideo(mediaSource, animCallback) {
       const video = document.createElement("video"); 
       video.src = mediaSource;
-      video.autoPlay = false;
+      video.autoplay = true; // Allow autoplay
       video.loop = true;
       video.muted = true;
       video.addEventListener("canplay", animCallback, {once: true});
@@ -66,34 +63,33 @@
       return video
     }
     function StartVideo() {
-      video.play();
       renderLoop();
     }
 
-    // Create simple mouse listeners
-    const mouse = createMouse();
-    function createMouse() {
-      const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
-      m.bounds = m.element.getBoundingClientRect();
-      function mouseEvents(e) {
-        m.x = e.pageX - m.bounds.left - scrollX;
-        m.y = e.pageY - m.bounds.top - scrollY;
-        mouse.button = e.type === "mousedown" ? true : e.type === "mouseup" ? false : mouse.button;
+    // Create simple touch listeners for mobile
+    const touch = createTouch();
+    function createTouch() {
+      const t = {x: 0, y: 0, px: 0, py: 0, touching: false, element: canvas};  
+      function touchEvents(e) {
+        const touch = e.touches[0];
+        t.x = touch.pageX - canvas.offsetLeft;
+        t.y = touch.pageY - canvas.offsetTop;
+        t.touching = e.type === "touchstart" ? true : e.type === "touchend" ? false : t.touching;
       }
-      ["down", "up", "move"].forEach(name => document.addEventListener("mouse" + name, mouseEvents));
-      return m;
+      ["start", "end", "move"].forEach(name => document.addEventListener("touch" + name, touchEvents));
+      return t;
     }
 
     // main render loop
     function renderLoop() {
       if (bgReady) {
-        ctx.drawImage(bgImg, 0, 0, W, H);
-        if (mouse.button) {
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+        if (touch.touching) {
           ctxO.globalCompositeOperation = "destination-out";
           ctxO.strokeStyle = "#0008";
           ctxO.beginPath();
-          ctxO.lineTo(mouse.px, mouse.py);
-          ctxO.lineTo(mouse.x, mouse.y);
+          ctxO.lineTo(touch.px, touch.py);
+          ctxO.lineTo(touch.x, touch.y);
           ctxO.lineWidth = 30;
           ctxO.stroke();
           ctxO.lineWidth = 26;
@@ -103,15 +99,15 @@
           showHelp = false;   
         }
         ctxO.globalCompositeOperation = "source-atop";
-        ctxO.drawImage(video, 0, 0, W, H);
-        ctx.drawImage(overlay, 0, 0, W, H);
+        ctxO.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
         if (showHelp) {              
-          ctx.strokeText( "Click drag to reveal", 32, 62);
-          ctx.fillText( "Click drag to reveal", 30, 60);
+          ctx.strokeText( "Touch and drag to reveal", 32, 62);
+          ctx.fillText( "Touch and drag to reveal", 30, 60);
         }
       }
-      mouse.px = mouse.x;
-      mouse.py = mouse.y;
+      touch.px = touch.x;
+      touch.py = touch.y;
       requestAnimationFrame(renderLoop);
     }
   </script>
