@@ -19,10 +19,21 @@
         height: auto;
       }
     }
+
+    /* Style for the tiny GIF */
+    #tiny-gif {
+      position: absolute;
+      top: 20px; /* Adjust vertical position */
+      left: 50%; /* Adjust horizontal position */
+      transform: translateX(-50%);
+      z-index: 9999; /* Ensure it's on top of everything */
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+  <!-- Tiny embedded GIF -->
+  <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   <script>
     const mediaSource = "Comp-1.ogv";
 
@@ -39,6 +50,16 @@
     canvas.height = H;
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = true; // Enable image smoothing for main canvas
+
+    // Show state and setup help settings
+    ctx.font = "32px arial";
+    ctx.font = "24px arial";
+    ctx.fillStyle = "#FFF";
+    ctx.strokeStyle = "#000";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 50; // Set brush size here
+    ctx.shadowBlur = 30; // Set shadow blur here
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; // Set shadow color and transparency here
 
     // setup overlay canvas
     const overlay = copyImg(canvas);
@@ -75,14 +96,6 @@
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
             
-          }
-          // Draw GIF on top
-          if (gifImg.complete) {
-            const gifWidth = 50; // Adjust the width of the GIF image
-            const gifHeight = 50; // Adjust the height of the GIF image
-            const gifX = (W - gifWidth) / 2; // Adjust the position of the GIF horizontally
-            const gifY = 20; // Adjust the position of the GIF vertically
-            ctx.drawImage(gifImg, gifX, gifY, gifWidth, gifHeight);
           }
         }
         requestAnimationFrame(renderLoop);
@@ -123,17 +136,6 @@
     function StartVideo() {
       video.play();
     }
-
-    // Load and draw the GIF image
-    const gifImg = new Image();
-    gifImg.src = 'br sprite.gif'; // Replace 'tiny-gif.gif' with the path to your GIF image
-
-    // Ensure the GIF is loaded before rendering
-    gifImg.onload = function() {
-      console.log("GIF image loaded successfully.");
-      // Trigger render loop after the GIF image is loaded
-      renderLoop();
-    };
 
     // Create simple mouse listeners
     const mouse = createMouse();
