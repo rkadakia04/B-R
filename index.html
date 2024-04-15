@@ -10,7 +10,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: auto; /* Adjust height to auto */
+      height: auto; 
     }
 
     @media (max-width: 768px) {
@@ -20,19 +20,18 @@
       }
     }
 
-    /* Style for the tiny GIF */
     #tiny-gif {
       position: absolute;
-      top: 20px; /* Adjust vertical position */
-      left: 50%; /* Adjust horizontal position */
+      top: 20px; 
+      left: 50%; 
       transform: translateX(-50%);
-      z-index: 9999; /* Ensure it's on top of everything */
+      z-index: 9999; 
     }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <!-- Tiny embedded GIF -->
+
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   <script>
     const mediaSource = "Comp-1.ogv";
@@ -40,52 +39,56 @@
     var showHelp = true;
     var bgReady = false;
 
-    // create and load background image
+
+    const imageSources = [
+      "PM-CROCS.png",
+      "VEGYN.png",
+      "blueverb.png",
+      "BRPIC.png",
+
+    ];
+
+    const randomIndex = Math.floor(Math.random() * imageSources.length);
+    const selectedImageSrc = imageSources[randomIndex];
+
     const bgImg = new Image;
-    bgImg.src = "PM-CROCS.png";
+    bgImg.src = selectedImageSrc;
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
     const canvas = document.getElementById("canvas");
     const W = window.innerWidth, H = window.innerHeight;
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = true; // Enable image smoothing for main canvas
+    ctx.imageSmoothingEnabled = true; 
 
-    // Show state and setup help settings
     ctx.font = "32px arial";
     ctx.font = "24px arial";
     ctx.fillStyle = "#FFF";
     ctx.strokeStyle = "#000";
     ctx.lineJoin = "round";
-    ctx.lineWidth = 50; // Set brush size here
-    ctx.shadowBlur = 30; // Set shadow blur here
-    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; // Set shadow color and transparency here
+    ctx.lineWidth = 50; 
+    ctx.shadowBlur = 30; 
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; 
 
-    // setup overlay canvas
     const overlay = copyImg(canvas);
     const ctxO = overlay.getContext("2d");
     ctxO.fillRect(0, 0, W, H);
     ctxO.lineJoin = "round";
     ctxO.lineCap = "round";
-    ctxO.globalAlpha = 1; // Set global alpha to 1 for full opacity
-    ctxO.imageSmoothingEnabled = true; // Enable image smoothing for overlay canvas
+    ctxO.globalAlpha = 1; 
+    ctxO.imageSmoothingEnabled = true; 
 
-    // Load brush image
     const brushImg = new Image();
-    brushImg.src = 'brbrush2.png'; // Replace 'brush.png' with the path to your brush image
+    brushImg.src = 'brbrush2.png'; 
 
-    // Handle brush image loading
     brushImg.onload = function() {
-      // Apply blur effect to the brush image
-      const blurredBrush = applyBlur(brushImg, 5); // Adjust blur radius as needed
+      const blurredBrush = applyBlur(brushImg, 5); 
 
-      // main render loop
       function renderLoop() {
         if (bgReady) {
           ctx.drawImage(bgImg, 0, 0, W, H);
           if (mouse.button) {
             ctxO.globalCompositeOperation = "destination-out";
-            // Scale the brush image to half its original size
             const brushWidth = blurredBrush.width / 2.5;
             const brushHeight = blurredBrush.height / 2.5;
             ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
@@ -103,7 +106,6 @@
       renderLoop();
     }
 
-    // Function to apply blur effect to an image
     function applyBlur(image, radius) {
       const canvas = document.createElement('canvas');
       canvas.width = image.width;
@@ -114,13 +116,11 @@
       return canvas;
     }
 
-    // Function to copy image
     function copyImg(img) {
       const can = Object.assign(document.createElement("canvas"), {width: img.width, height: img.height});
       return can;
     }
 
-    // create video element and load media. Will call StartVideo when ready
     const video = createVideo(mediaSource, StartVideo);
     function createVideo(mediaSource, animCallback) {
       const video = document.createElement("video"); 
@@ -137,7 +137,6 @@
       video.play();
     }
 
-    // Create simple mouse listeners
     const mouse = createMouse();
     function createMouse() {
       const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
