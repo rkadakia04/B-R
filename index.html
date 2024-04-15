@@ -10,37 +10,35 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%; /* Maintain aspect ratio */
+      height: auto; /* Adjust height to auto */
     }
-  
+
     @media (max-width: 768px) {
       canvas {
         width: 90%;
-        height: 100%; /* Maintain aspect ratio */
+        height: auto;
       }
     }
   </style>
-  
 </head>
 <body>
   <canvas id="canvas"></canvas>
   <script>
-    const mediaSource = "http://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv";
+    const mediaSource = "Comp-1.ogv";
 
     var showHelp = true;
     var bgReady = false;
 
     // create and load background image
     const bgImg = new Image;
-    bgImg.src = "b&b.jpg";
+    bgImg.src = "PM-CROCS.png";
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
     const canvas = document.getElementById("canvas");
     const W = window.innerWidth, H = window.innerHeight;
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
-
-    
+    ctx.imageSmoothingEnabled = true; // Enable image smoothing for main canvas
 
     // setup overlay canvas
     const overlay = copyImg(canvas);
@@ -49,12 +47,67 @@
     ctxO.lineJoin = "round";
     ctxO.lineCap = "round";
     ctxO.globalAlpha = 1; // Set global alpha to 1 for full opacity
+    ctxO.imageSmoothingEnabled = true; // Enable image smoothing for overlay canvas
+
+    // Load brush image
+    const brushImg = new Image();
+    brushImg.src = 'brbrush2.png'; // Replace 'brush.png' with the path to your brush image
+
+    // Handle brush image loading
+    brushImg.onload = function() {
+      // Apply blur effect to the brush image
+      const blurredBrush = applyBlur(brushImg, 5); // Adjust blur radius as needed
+
+      // main render loop
+      function renderLoop() {
+        if (bgReady) {
+          ctx.drawImage(bgImg, 0, 0, W, H);
+          if (mouse.button) {
+            ctxO.globalCompositeOperation = "destination-out";
+            // Scale the brush image to half its original size
+            const brushWidth = blurredBrush.width / 2.5;
+            const brushHeight = blurredBrush.height / 2.5;
+            ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
+            showHelp = false;
+          }
+          ctxO.globalCompositeOperation = "source-atop";
+          ctxO.drawImage(video, 0, 0, W, H);
+          ctx.drawImage(overlay, 0, 0, W, H);
+          if (showHelp) {              
+            
+          }
+          // Draw GIF on top
+          if (gifImg.complete) {
+            const gifWidth = 50; // Adjust the width of the GIF image
+            const gifHeight = 50; // Adjust the height of the GIF image
+            const gifX = (W - gifWidth) / 2; // Adjust the position of the GIF horizontally
+            const gifY = 20; // Adjust the position of the GIF vertically
+            ctx.drawImage(gifImg, gifX, gifY, gifWidth, gifHeight);
+          }
+        }
+        requestAnimationFrame(renderLoop);
+      }
+      renderLoop();
+    }
+
+    // Function to apply blur effect to an image
+    function applyBlur(image, radius) {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext('2d');
+      ctx.filter = `blur(${radius}px)`;
+      ctx.drawImage(image, 0, 0);
+      return canvas;
+    }
+
+    // Function to copy image
     function copyImg(img) {
       const can = Object.assign(document.createElement("canvas"), {width: img.width, height: img.height});
       return can;
     }
 
-    // create video element and load media. Will call StartVideo when ready   
+    // create video element and load media. Will call StartVideo when ready
     const video = createVideo(mediaSource, StartVideo);
     function createVideo(mediaSource, animCallback) {
       const video = document.createElement("video"); 
@@ -65,61 +118,36 @@
       video.addEventListener("canplay", animCallback, {once: true});
       video.addEventListener("error", error, {once: true})  
       function error(e) { console.log("Could not load video!!! ", e); }  
-      return video
+      return video;
     }
     function StartVideo() {
       video.play();
+    }
+
+    // Load and draw the GIF image
+    const gifImg = new Image();
+    gifImg.src = 'br sprite.gif'; // Replace 'tiny-gif.gif' with the path to your GIF image
+
+    // Ensure the GIF is loaded before rendering
+    gifImg.onload = function() {
+      console.log("GIF image loaded successfully.");
+      // Trigger render loop after the GIF image is loaded
       renderLoop();
+    };
+
+    // Create simple mouse listeners
+    const mouse = createMouse();
+    function createMouse() {
+      const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
+      m.bounds = m.element.getBoundingClientRect();
+      function mouseEvents(e) {
+        m.x = e.pageX - m.bounds.left - scrollX;
+        m.y = e.pageY - m.bounds.top - scrollY;
+        mouse.button = e.buttons > 0;
+      }
+      document.addEventListener("mousemove", mouseEvents);
+      return m;
     }
-
-   // Create simple mouse listeners
-const mouse = createMouse();
-function createMouse() {
-  const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
-  m.bounds = m.element.getBoundingClientRect();
-  function mouseEvents(e) {
-    m.x = e.pageX - m.bounds.left - scrollX;
-    m.y = e.pageY - m.bounds.top - scrollY;
-    mouse.button = e.buttons > 0;
-  }
-  document.addEventListener("mousemove", mouseEvents);
-  return m;
-}
-
-
- // main render loop
-function renderLoop() {
-  if (bgReady) {
-    ctx.drawImage(bgImg, 0, 0, W, H);
-    if (mouse.button) {
-      ctxO.globalCompositeOperation = "destination-out";
-      ctxO.filter = "blur(30px)"; // Apply blur filter
-      ctxO.lineWidth = 200; // Adjust line width as needed
-      ctxO.lineCap = "round";
-      ctxO.beginPath();
-      ctxO.moveTo(mouse.px, mouse.py);
-      ctxO.lineTo(mouse.x, mouse.y);
-      ctxO.stroke();
-      ctxO.closePath();
-      mouse.px = mouse.x;
-      mouse.py = mouse.y;
-      showHelp = false;   
-    } else {
-      // Reset previous mouse position when mouse button is released
-      mouse.px = mouse.x;
-      mouse.py = mouse.y;
-    }
-    ctxO.filter = "none"; // Reset filter
-    ctxO.globalCompositeOperation = "source-atop";
-    ctxO.drawImage(video, 0, 0, W, H);
-    ctx.drawImage(overlay, 0, 0, W, H);
-   
-  }
-  requestAnimationFrame(renderLoop);
-}
-
-
-
 
   </script>
 </body>
