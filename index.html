@@ -35,7 +35,7 @@
 
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   <script>
-    const mediaSource = "Comp-1.ogv";
+    const mediaSource = "BRFLAMES.ogv";
 
     var showHelp = true;
     var bgReady = false;
@@ -90,8 +90,8 @@
           ctx.drawImage(bgImg, 0, 0, W, H);
           if (mouse.button) {
             ctxO.globalCompositeOperation = "destination-out";
-            const brushWidth = blurredBrush.width / 2.5;
-            const brushHeight = blurredBrush.height / 2.5;
+            const brushWidth = blurredBrush.width / 3.75;
+            const brushHeight = blurredBrush.height / 3.75;
             ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
             showHelp = false;
           }
