@@ -1,16 +1,18 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Canvas Video Overlay</title>
+  <title>100BR</title>
   <style>
     canvas {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: auto; /* Adjust height to auto */
+      height: auto; 
     }
 
     @media (max-width: 768px) {
@@ -19,127 +21,140 @@
         height: auto;
       }
     }
+
+    #tiny-gif {
+      position: absolute;
+      top: 20px; 
+      left: 50%; 
+      transform: translateX(-50%);
+      z-index: 9999; 
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+
+  <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
+  
+  <!-- Define a video element with an id -->
+  <video id="video" autoplay loop muted style="display: none;"></video>
+
   <script>
-    const mediaSource = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
+    const mediaSource = "BRFLAMES (1).ogv";
+
+    // Check if the browser supports the video format
+    if (!document.createElement('video').canPlayType('video/ogg')) {
+      console.error('Your browser does not support OGV video format.');
+    } else {
+      // Browser supports OGV format, proceed with creating video element
+      const video = document.getElementById('video');
+      video.src = mediaSource;
+      video.addEventListener('canplay', function() {
+        video.play();
+      });
+      video.addEventListener('error', function(e) {
+        console.error('Error loading video:', e);
+      });
+    }
 
     var showHelp = true;
     var bgReady = false;
 
-    // create and load background image
-    const bgImg = new Image;
-    bgImg.src = "blueverb.png";
-    bgImg.addEventListener("load", () => {
-      bgReady = true;
-      startCanvas();
-    }, {once: true});
-    bgImg.addEventListener("error", () => {
-      console.log("Error loading background image.");
-    });
 
+    const imageSources = [
+      "PM-CROCS.png",
+      "VEGYN.png",
+      "blueverb.png",
+      "BRPIC.png",
+    ];
+
+    const randomIndex = Math.floor(Math.random() * imageSources.length);
+    const selectedImageSrc = imageSources[randomIndex];
+
+    const bgImg = new Image;
+    bgImg.src = selectedImageSrc;
+    bgImg.addEventListener("load", () => bgReady = true, {once: true});
     const canvas = document.getElementById("canvas");
     const W = window.innerWidth, H = window.innerHeight;
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true; 
 
-    function startCanvas() {
-      // Show state and setup help settings
-      ctx.font = "32px Arial";
-      ctx.fillText("Loading...", 30, 60);
-      ctx.font = "24px Arial";
-      ctx.fillStyle = "#FFF";
-      ctx.strokeStyle = "#000";
-      ctx.lineJoin = "round";
-      ctx.lineWidth = 30; // Set brush size here
-      ctx.shadowBlur = 30; // Set shadow blur here
-      ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; // Set shadow color and transparency here
+    ctx.font = "32px arial";
+    ctx.font = "24px arial";
+    ctx.fillStyle = "#FFF";
+    ctx.strokeStyle = "#000";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 50; 
+    ctx.shadowBlur = 30; 
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; 
 
-      // setup overlay canvas
-      const overlay = copyImg(canvas);
-      const ctxO = overlay.getContext("2d");
-      ctxO.fillRect(0, 0, W, H);
-      ctxO.lineJoin = "round";
-      ctxO.lineCap = "round";
-      ctxO.globalAlpha = 1; // Set global alpha to 1 for full opacity
+    const overlay = copyImg(canvas);
+    const ctxO = overlay.getContext("2d");
+    ctxO.fillRect(0, 0, W, H);
+    ctxO.lineJoin = "round";
+    ctxO.lineCap = "round";
+    ctxO.globalAlpha = 1; 
+    ctxO.imageSmoothingEnabled = true; 
 
-      // create video element and load media. Will call StartVideo when ready
-      const video = createVideo(mediaSource, StartVideo);
-      function createVideo(mediaSource, animCallback) {
-        const video = document.createElement("video"); 
-        video.src = mediaSource;
-        video.autoPlay = false;
-        video.loop = true;
-        video.muted = true;
-        video.addEventListener("canplay", animCallback, {once: true});
-        video.addEventListener("error", error, {once: true});
-        function error(e) { 
-          console.log("Could not load video!!! ", e); 
-        }  
-        return video
-      }
+    const brushImg = new Image();
+    brushImg.src = 'brbrush2.png'; 
 
-      function StartVideo() {
-        video.play()
-          .then(() => {
-            renderLoop();
-          })
-          .catch((error) => {
-            console.log("Error playing video: ", error);
-          });
-      }
+    brushImg.onload = function() {
+      const blurredBrush = applyBlur(brushImg, 5); 
 
-      // Create simple mouse listeners
-      const mouse = createMouse();
-      function createMouse() {
-        const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
-        m.bounds = m.element.getBoundingClientRect();
-        function mouseEvents(e) {
-          m.x = e.pageX - m.bounds.left - scrollX;
-          m.y = e.pageY - m.bounds.top - scrollY;
-          mouse.button = e.buttons > 0;
-        }
-        document.addEventListener("mousemove", mouseEvents);
-        return m;
-      }
-
-      // main render loop
       function renderLoop() {
         if (bgReady) {
           ctx.drawImage(bgImg, 0, 0, W, H);
           if (mouse.button) {
             ctxO.globalCompositeOperation = "destination-out";
-            ctxO.filter = "blur(30px)"; // Apply blur filter
-            ctxO.lineWidth = 200; // Adjust line width as needed
-            ctxO.lineCap = "round";
-            ctxO.beginPath();
-            ctxO.moveTo(mouse.px, mouse.py);
-            ctxO.lineTo(mouse.x, mouse.y);
-            ctxO.stroke();
-            ctxO.closePath();
-            mouse.px = mouse.x;
-            mouse.py = mouse.y;
-            showHelp = false;   
-          } else {
-            // Reset previous mouse position when mouse button is released
-            mouse.px = mouse.x;
-            mouse.py = mouse.y;
+            const brushWidth = blurredBrush.width / 3.75;
+            const brushHeight = blurredBrush.height / 3.75;
+            ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
+            showHelp = false;
           }
-          ctxO.filter = "none"; // Reset filter
           ctxO.globalCompositeOperation = "source-atop";
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            ctx.strokeText( "Click drag to reveal", 32, 62);
-            ctx.fillText( "Click drag to reveal", 30, 60);
+            
           }
         }
         requestAnimationFrame(renderLoop);
       }
+      renderLoop();
     }
+
+    function applyBlur(image, radius) {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext('2d');
+      ctx.filter = `blur(${radius}px)`;
+      ctx.drawImage(image, 0, 0);
+      return canvas;
+    }
+
+    function copyImg(img) {
+      const can = Object.assign(document.createElement("canvas"), {width: img.width, height: img.height});
+      return can;
+    }
+
+    const mouse = createMouse();
+    function createMouse() {
+      const m = {x : 0, y : 0, px: 0, py: 0, button : false, element: canvas, bound: null};  
+      m.bounds = m.element.getBoundingClientRect();
+      function mouseEvents(e) {
+        m.x = e.pageX - m.bounds.left - scrollX;
+        m.y = e.pageY - m.bounds.top - scrollY;
+        mouse.button = e.buttons > 0;
+      }
+      document.addEventListener("mousemove", mouseEvents);
+      return m;
+    }
+
   </script>
 </body>
 </html>
+
