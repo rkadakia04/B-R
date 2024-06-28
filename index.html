@@ -35,25 +35,34 @@
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   
   <!-- Define a video element with an id -->
-  <video id="video" autoplay loop muted style="display: none;"></video>
+  <video id="video" autoplay loop muted style="display: none;">
+    <source id="ogvSource" src="BRFLAMES (1).ogv" type="video/ogg">
+    <source id="mp4Source" src="BRFLAMES.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
   <script>
-    const mediaSource = "BRFLAMES (1).ogv";
+    const video = document.getElementById('video');
+    const ogvSource = document.getElementById('ogvSource');
+    const mp4Source = document.getElementById('mp4Source');
 
-    // Check if the browser supports the video format
+    // Check if the browser supports the OGV format
     if (!document.createElement('video').canPlayType('video/ogg')) {
       console.error('Your browser does not support OGV video format.');
+      // Optionally remove the OGV source to avoid any confusion
+      ogvSource.remove();
     } else {
       // Browser supports OGV format, proceed with creating video element
-      const video = document.getElementById('video');
-      video.src = mediaSource;
-      video.addEventListener('canplay', function() {
-        video.play();
-      });
-      video.addEventListener('error', function(e) {
-        console.error('Error loading video:', e);
-      });
+      video.src = ogvSource.src;
     }
+
+    video.addEventListener('canplay', function() {
+      video.play();
+    });
+
+    video.addEventListener('error', function(e) {
+      console.error('Error loading video:', e);
+    });
 
     var showHelp = true;
     var bgReady = false;
@@ -116,7 +125,7 @@
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            
+            // Help content can be added here
           }
         }
         requestAnimationFrame(renderLoop);
