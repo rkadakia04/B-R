@@ -47,13 +47,13 @@
       video.load();
       video.addEventListener('canplay', function() {
         video.play();
-      });
+      }, {once: true});
       video.addEventListener('error', function(e) {
         console.error('Error loading video:', e);
         if (source !== webmSource) {
           loadVideo(webmSource);
         }
-      }, { once: true });
+      }, {once: true});
     }
 
     if (video.canPlayType('video/ogg')) {
@@ -122,7 +122,7 @@
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            
+            // Add any help or guidance display logic here
           }
         }
         requestAnimationFrame(renderLoop);
