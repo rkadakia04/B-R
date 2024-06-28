@@ -18,7 +18,7 @@
         width: 90%;
         height: auto;
       }
-    } 
+    }
 
     #tiny-gif {
       position: absolute;
@@ -38,7 +38,7 @@
   <video id="video" autoplay loop muted style="display: none;"></video>
 
   <script>
-    const mediaSource = "/Users/admin/Sites/B-R/BRFLAMES (1).ogv"; // Adjust the path accordingly
+    const mediaSource = "BRFLAMES (1).ogv";
 
     // Check if the browser supports the video format
     if (!document.createElement('video').canPlayType('video/ogg')) {
@@ -116,7 +116,7 @@
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-           
+            
           }
         }
         requestAnimationFrame(renderLoop);
