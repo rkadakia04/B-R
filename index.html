@@ -37,15 +37,8 @@
   <!-- Define a video element with an id -->
   <video id="video" autoplay loop muted style="display: none;"></video>
 
-  <video id="video" autoplay loop muted style="display: none;">
-    <source src="BRFLAMES (1).ogv" type="video/ogg">
-    <source src="BRFLAMES.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-
-  
   <script>
-    const mediaSource = "/Users/admin/Sites/B-R/BRFLAMES (1).ogv";
+    const mediaSource = "/Users/admin/Sites/B-R/BRFLAMES (1).ogv"; // Adjust the path accordingly
 
     // Check if the browser supports the video format
     if (!document.createElement('video').canPlayType('video/ogg')) {
@@ -123,7 +116,7 @@
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            
+           
           }
         }
         requestAnimationFrame(renderLoop);
