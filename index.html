@@ -37,29 +37,24 @@
   <!-- Define a video element with multiple sources -->
   <video id="video" autoplay loop muted style="display: none;">
     <source src="/Users/admin/Sites/B-R/BRFLAMES (1).mp4" type="video/mp4">
-    <source src="BRFLAMES.webm" type="video/webm">
+    <source src="/Users/admin/Sites/B-R/BRFLAMES (1).ogv" type="video/ogg">
     <source src="/Users/admin/Sites/B-R/BRFLAMES (1).ogv" type="video/ogg">
     Your browser does not support the video tag.
   </video>
 
   <script>
-    const mediaSource = document.querySelector('video').querySelector('source');
+    const video = document.getElementById('video');
 
-    if (mediaSource && !mediaSource.error) {
-      const video = document.getElementById('video');
-      video.addEventListener('canplay', function() {
-        video.play();
-      });
-      video.addEventListener('error', function(e) {
-        console.error('Error loading video:', e);
-      });
-    } else {
-      console.error('Your browser does not support any of the provided video formats.');
-    }
+    video.addEventListener('canplay', function() {
+      video.play();
+    });
+
+    video.addEventListener('error', function(e) {
+      console.error('Error loading video:', e);
+    });
 
     var showHelp = true;
     var bgReady = false;
-
 
     const imageSources = [
       "PM-CROCS.png",
@@ -71,9 +66,10 @@
     const randomIndex = Math.floor(Math.random() * imageSources.length);
     const selectedImageSrc = imageSources[randomIndex];
 
-    const bgImg = new Image;
+    const bgImg = new Image();
     bgImg.src = selectedImageSrc;
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
+
     const canvas = document.getElementById("canvas");
     const W = window.innerWidth, H = window.innerHeight;
     canvas.width = W;
@@ -118,7 +114,7 @@
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            
+            // Draw help text or indicators here if needed
           }
         }
         requestAnimationFrame(renderLoop);
