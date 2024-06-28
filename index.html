@@ -27,6 +27,10 @@
       transform: translateX(-50%);
       z-index: 9999; 
     }
+
+    video {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -35,17 +39,23 @@
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   
   <!-- Define a video element with multiple sources -->
-  <video id="video" autoplay loop muted style="display: none;">
+  <video id="video" autoplay loop muted>
     <source src="/Users/admin/Sites/B-R/BRFLAMES (1).mp4" type="video/mp4">
-    <source src="/Users/admin/Sites/B-R/BRFLAMES (1).ogv" type="video/ogg">
+    <source src="BRFLAMES.webm" type="video/webm">
     <source src="/Users/admin/Sites/B-R/BRFLAMES (1).ogv" type="video/ogg">
     Your browser does not support the video tag.
   </video>
 
   <script>
     const video = document.getElementById('video');
+    const canvas = document.getElementById("canvas");
+    const W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
 
     video.addEventListener('canplay', function() {
+      video.style.display = 'block'; // Make the video element visible
       video.play();
     });
 
@@ -70,13 +80,7 @@
     bgImg.src = selectedImageSrc;
     bgImg.addEventListener("load", () => bgReady = true, {once: true});
 
-    const canvas = document.getElementById("canvas");
-    const W = window.innerWidth, H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = true; 
-
     ctx.font = "32px arial";
     ctx.font = "24px arial";
     ctx.fillStyle = "#FFF";
