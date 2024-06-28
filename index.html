@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,37 +35,30 @@
 
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   
-  <video id="video" autoplay loop muted style="display: none;">
-    <source id="ogvSource" src="BRFLAMES (1).ogv" type="video/ogg">
-    <source id="mp4Source" src="BRFLAMES.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <!-- Define a video element with an id -->
+  <video id="video" autoplay loop muted style="display: none;"></video>
 
   <script>
-    const video = document.getElementById('video');
-    const ogvSource = document.getElementById('ogvSource');
-    const mp4Source = document.getElementById('mp4Source');
+    const mediaSource = "BRFLAMES (1).ogv";
 
-    // Check if the browser supports the OGV format
+    // Check if the browser supports the video format
     if (!document.createElement('video').canPlayType('video/ogg')) {
       console.error('Your browser does not support OGV video format.');
-      // Optionally remove the OGV source to avoid any confusion
-      ogvSource.remove();
     } else {
       // Browser supports OGV format, proceed with creating video element
-      video.src = ogvSource.src;
+      const video = document.getElementById('video');
+      video.src = mediaSource;
+      video.addEventListener('canplay', function() {
+        video.play();
+      });
+      video.addEventListener('error', function(e) {
+        console.error('Error loading video:', e);
+      });
     }
-
-    video.addEventListener('canplay', function() {
-      video.play();
-    });
-
-    video.addEventListener('error', function(e) {
-      console.error('Error loading video:', e);
-    });
 
     var showHelp = true;
     var bgReady = false;
+
 
     const imageSources = [
       "PM-CROCS.png",
@@ -119,11 +113,11 @@
             ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
             showHelp = false;
           }
-          ctxO.globalCompositeOperation = "source-over";
+          ctxO.globalCompositeOperation = "source-atop";
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
-            // Help content can be added here
+            
           }
         }
         requestAnimationFrame(renderLoop);
@@ -156,11 +150,10 @@
         mouse.button = e.buttons > 0;
       }
       document.addEventListener("mousemove", mouseEvents);
-      document.addEventListener("mousedown", () => mouse.button = true);
-      document.addEventListener("mouseup", () => mouse.button = false);
       return m;
     }
 
   </script>
 </body>
 </html>
+
