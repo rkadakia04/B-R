@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,25 +34,27 @@
 
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   
-  <!-- Define a video element with an id -->
-  <video id="video" autoplay loop muted style="display: none;"></video>
+  <!-- Define a video element with multiple sources -->
+  <video id="video" autoplay loop muted style="display: none;">
+    <source src="/Users/admin/Sites/B-R/BRFLAMES (1).mp4" type="video/mp4">
+    <source src="BRFLAMES.webm" type="video/webm">
+    <source src="/Users/admin/Sites/B-R/BRFLAMES (1).ogv" type="video/ogg">
+    Your browser does not support the video tag.
+  </video>
 
   <script>
-    const mediaSource = "BRFLAMES (1).ogv";
+    const mediaSource = document.querySelector('video').querySelector('source');
 
-    // Check if the browser supports the video format
-    if (!document.createElement('video').canPlayType('video/ogg')) {
-      console.error('Your browser does not support OGV video format.');
-    } else {
-      // Browser supports OGV format, proceed with creating video element
+    if (mediaSource && !mediaSource.error) {
       const video = document.getElementById('video');
-      video.src = mediaSource;
       video.addEventListener('canplay', function() {
         video.play();
       });
       video.addEventListener('error', function(e) {
         console.error('Error loading video:', e);
       });
+    } else {
+      console.error('Your browser does not support any of the provided video formats.');
     }
 
     var showHelp = true;
@@ -156,4 +157,3 @@
   </script>
 </body>
 </html>
-
