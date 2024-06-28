@@ -46,6 +46,7 @@
       video.src = source;
       video.load();
       video.addEventListener('canplay', function() {
+        console.log('Video can play:', source);
         video.play();
       }, {once: true});
       video.addEventListener('error', function(e) {
