@@ -34,7 +34,6 @@
 
   <img id="tiny-gif" src="BRBRSPRITE.gif" width="75" height="75" alt="Tiny GIF">
   
-  <!-- Define a video element with an id -->
   <video id="video" autoplay loop muted style="display: none;">
     <source id="ogvSource" src="BRFLAMES (1).ogv" type="video/ogg">
     <source id="mp4Source" src="BRFLAMES.mp4" type="video/mp4">
@@ -66,7 +65,6 @@
 
     var showHelp = true;
     var bgReady = false;
-
 
     const imageSources = [
       "PM-CROCS.png",
@@ -121,7 +119,7 @@
             ctxO.drawImage(blurredBrush, mouse.x - brushWidth / 2, mouse.y - brushHeight / 2, brushWidth, brushHeight);
             showHelp = false;
           }
-          ctxO.globalCompositeOperation = "source-atop";
+          ctxO.globalCompositeOperation = "source-over";
           ctxO.drawImage(video, 0, 0, W, H);
           ctx.drawImage(overlay, 0, 0, W, H);
           if (showHelp) {              
@@ -158,6 +156,8 @@
         mouse.button = e.buttons > 0;
       }
       document.addEventListener("mousemove", mouseEvents);
+      document.addEventListener("mousedown", () => mouse.button = true);
+      document.addEventListener("mouseup", () => mouse.button = false);
       return m;
     }
 
